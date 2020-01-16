@@ -18,6 +18,7 @@
 import os
 import mmap
 import struct
+import sys
 
 class GeoidBadDataFile(Exception):
     pass
@@ -127,7 +128,10 @@ class GeoidHeight(object):
                 raise GeoidBadDataFile("File has the wrong length")
 
             self.headerlen = headerlen
-            self.raw = mmap.mmap(fd, fullsize, mmap.MAP_SHARED, mmap.PROT_READ)
+            if sys.platform == 'win32':
+                self.raw = mmap.mmap(fd, fullsize, access=mmap.ACCESS_READ)
+            else:
+                self.raw = mmap.mmap(fd, fullsize, flags=mmap.MAP_SHARED, prot=mmap.PROT_READ)
 
         self.rlonres = self.width / 360.0
         self.rlatres = (self.height - 1) / 180.0
